@@ -6,6 +6,16 @@ import { Play } from "lucide-react";
 import Image from "next/image";
 import type { Project } from "@/data/content";
 
+// PERF: Module-scope animation constants — stable across renders.
+const cardInitial    = { opacity: 0, scale: 0.92 };
+const cardAnimate    = { opacity: 1, scale: 1 };
+const cardExit       = { opacity: 0, scale: 0.92 };
+const cardTransition = { duration: 0.4, ease: [0.16, 1, 0.3, 1] } as const;
+const cardHover      = { y: -6 };
+const playInitial    = { opacity: 0, scale: 0.6 };
+const playHover      = { opacity: 1, scale: 1 };
+const playTransition = { duration: 0.25, ease: [0.16, 1, 0.3, 1] } as const;
+
 type Props = {
   project: Project;
   onOpen: (project: Project) => void;
@@ -34,11 +44,11 @@ const ProjectCard = forwardRef<HTMLButtonElement, Props>(function ProjectCard(
       ref={ref}
       layout
       onClick={() => onOpen(project)}
-      initial={{ opacity: 0, scale: 0.92 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.92 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{ y: -6 }}
+      initial={cardInitial}
+      animate={cardAnimate}
+      exit={cardExit}
+      transition={cardTransition}
+      whileHover={cardHover}
       className="group relative aspect-video w-full overflow-hidden border border-line text-left bg-panel"
     >
       {/* BUG FIX — LCP / responsive image sizing
@@ -57,9 +67,9 @@ const ProjectCard = forwardRef<HTMLButtonElement, Props>(function ProjectCard(
 
       <motion.div
         className="absolute inset-0 flex items-center justify-center"
-        initial={{ opacity: 0, scale: 0.6 }}
-        whileHover={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+        initial={playInitial}
+        whileHover={playHover}
+        transition={playTransition}
       >
         <span className="w-14 h-14 rounded-full bg-glow/90 flex items-center justify-center shadow-glow">
           <Play size={20} className="text-ink fill-ink" />
@@ -72,9 +82,21 @@ const ProjectCard = forwardRef<HTMLButtonElement, Props>(function ProjectCard(
           <h3 className="font-display text-lg uppercase leading-tight text-paper truncate">
             {project.title}
           </h3>
-          <p className="text-xs text-mist/70 mt-0.5 truncate">{project.client}</p>
+          {/*
+            CONTRAST FIX: client name
+            Was:  text-mist/70 → 3.97:1 ✗ FAIL
+            Now:  text-mist    → 7.10:1 ✓ PASS
+            (rendered over gradient, but Lighthouse audits against underlying
+            background — use full mist to guarantee pass in all conditions)
+          */}
+          <p className="text-xs text-mist mt-0.5 truncate">{project.client}</p>
         </div>
-        <span className="timecode text-[10px] text-mist/50 shrink-0">{project.year}</span>
+        {/*
+          CONTRAST FIX: year label
+          Was:  text-mist/50 → 2.55:1 ✗ FAIL
+          Now:  text-mist    → 7.10:1 ✓ PASS
+        */}
+        <span className="timecode text-[10px] text-mist shrink-0">{project.year}</span>
       </div>
     </motion.button>
   );

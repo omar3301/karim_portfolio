@@ -1,14 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { categories, projects, type Category, type Project } from "@/data/content";
 import ProjectCard from "./ProjectCard";
 import VideoModal from "./VideoModal";
 
+// PERF: Module-scope animation objects — never recreated on re-render.
+const labelVariant   = { hidden: { opacity: 0 }, visible: { opacity: 1 } };
+const headingVariant = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0 } };
+const headingTrans   = { duration: 0.7, ease: [0.16, 1, 0.3, 1] } as const;
+const pillTrans      = { type: "spring", stiffness: 350, damping: 30 } as const;
+
 export default function PortfolioGrid() {
   const [activeFilter, setActiveFilter] = useState<Category>("All");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
+  // PERF: Stable references via useCallback — prevents child re-renders
+  // caused by inline arrow functions being re-created each render.
+  const handleClose = useCallback(() => setSelectedProject(null), []);
 
   const filteredProjects =
     activeFilter === "All" ? projects : projects.filter((p) => p.category === activeFilter);
@@ -17,8 +27,9 @@ export default function PortfolioGrid() {
     <section id="work" className="relative py-24 md:py-36 px-6 md:px-10">
       <div className="max-w-6xl mx-auto">
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          variants={labelVariant}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true }}
           className="timecode text-glow text-sm mb-4"
         >
@@ -26,10 +37,11 @@ export default function PortfolioGrid() {
         </motion.div>
 
         <motion.h2
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          variants={headingVariant}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          transition={headingTrans}
           className="font-display text-3xl sm:text-4xl md:text-5xl uppercase mb-10"
         >
           Cut. Render. Repeat.
@@ -53,7 +65,7 @@ export default function PortfolioGrid() {
                   <motion.span
                     layoutId="filter-pill"
                     className="absolute inset-0 bg-glow shadow-glowSm -z-10"
-                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    transition={pillTrans}
                   />
                 )}
                 <span className="relative z-10">{cat}</span>
@@ -76,12 +88,17 @@ export default function PortfolioGrid() {
         </LayoutGroup>
 
         {filteredProjects.length === 0 && (
-          <p className="text-mist/60 text-sm timecode mt-8">NO CLIPS IN THIS BIN YET.</p>
+          /*
+            CONTRAST FIX: empty state text
+            Was:  text-mist/60 → 3.17:1 ✗ FAIL
+            Now:  text-mist    → 7.10:1 ✓ PASS
+          */
+          <p className="text-mist text-sm timecode mt-8">NO CLIPS IN THIS BIN YET.</p>
         )}
       </div>
 
       {/* Lightbox modal — the ONLY place an iframe is ever rendered */}
-      <VideoModal project={selectedProject} onClose={() => setSelectedProject(null)} />
+      <VideoModal project={selectedProject} onClose={handleClose} />
     </section>
   );
 }

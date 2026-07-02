@@ -51,7 +51,12 @@ function FormField({
 }) {
   return (
     <label className="flex flex-col gap-2">
-      <span className="timecode text-xs text-mist/70">{label.toUpperCase()}</span>
+      {/*
+        CONTRAST FIX: form field label
+        Was:  text-mist/70 → 3.97:1 ✗ FAIL
+        Now:  text-mist    → 7.10:1 ✓ PASS
+      */}
+      <span className="timecode text-xs text-mist">{label.toUpperCase()}</span>
       {type === "textarea" ? (
         <textarea
           required
@@ -59,7 +64,13 @@ function FormField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="bg-transparent border-b border-line focus:border-glow outline-none py-2 text-paper placeholder:text-mist/30 transition-colors resize-none"
+          /*
+            CONTRAST FIX: placeholder text
+            Was:  placeholder:text-mist/30 → 1.62:1 ✗ FAIL
+            Now:  placeholder:text-mist/80 → 4.85:1 ✓ PASS
+            WCAG 1.4.3 applies to placeholder text — it conveys expected input.
+          */
+          className="bg-transparent border-b border-line focus:border-glow outline-none py-2 text-paper placeholder:text-mist/80 transition-colors resize-none"
         />
       ) : (
         <input
@@ -68,7 +79,7 @@ function FormField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="bg-transparent border-b border-line focus:border-glow outline-none py-2 text-paper placeholder:text-mist/30 transition-colors"
+          className="bg-transparent border-b border-line focus:border-glow outline-none py-2 text-paper placeholder:text-mist/80 transition-colors"
         />
       )}
     </label>
@@ -175,7 +186,8 @@ export default function Contact() {
             className="flex flex-col gap-10"
           >
             <div>
-              <p className="timecode text-xs text-mist/60 mb-4">DIRECT</p>
+              {/* CONTRAST FIX: text-mist/60 (3.17:1 ✗) → text-mist (7.10:1 ✓) */}
+              <p className="timecode text-xs text-mist mb-4">DIRECT</p>
               <a
                 href={`mailto:${profile.email}`}
                 className="flex items-center gap-3 text-paper/80 hover:text-glow transition-colors mb-3 py-1"
@@ -193,10 +205,12 @@ export default function Contact() {
             </div>
 
             <div>
-              <p className="timecode text-xs text-mist/60 mb-4">SOCIAL</p>
+              {/* CONTRAST FIX: text-mist/60 (3.17:1 ✗) → text-mist (7.10:1 ✓) */}
+              <p className="timecode text-xs text-mist mb-4">SOCIAL</p>
               <div className="flex gap-3">
                 {socials.map((social) => {
                   const Icon = SOCIAL_ICONS[social.name];
+                  // text-mist/80 = 4.85:1 ✓ PASS — confirmed, no change needed
                   return (
                     <motion.a
                       key={social.name}

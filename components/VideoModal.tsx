@@ -79,7 +79,8 @@ const VideoModal = forwardRef<HTMLDivElement, Props>(function VideoModal(
                   {project.title}
                 </h3>
               </div>
-              <span className="timecode text-xs text-mist/60 shrink-0">{project.client}</span>
+              {/* CONTRAST FIX: text-mist/60 (3.17:1 ✗) → text-mist (7.10:1 ✓) */}
+              <span className="timecode text-xs text-mist shrink-0">{project.client}</span>
             </div>
           </motion.div>
         </motion.div>
