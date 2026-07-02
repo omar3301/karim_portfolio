@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #0a0a0c;
+  color: #f2f1ed;
+  overflow-x: hidden;
+}
+
+/* Subtle fixed film-grain texture — ties to the editing subject without
+   being a literal/cliché icon. Performance-cheap: static, no JS, no repaint. */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  mix-blend-mode: overlay;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0c;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a30;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #7c5cff;
+}
+
+/* Visible keyboard focus — accessible, on-brand (glow-colored ring) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #7c5cff;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+::selection {
+  background-color: #7c5cff;
+  color: #0a0a0c;
+}
+
+.timecode {
+  font-family: var(--font-jetbrains), monospace;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Prevent background scroll when the video modal is open */
+.modal-open {
+  overflow: hidden;
+}
